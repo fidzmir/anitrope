@@ -315,6 +315,40 @@ header {
   box-shadow: 2px 2px 0px #000;
 }
 
+.lang-switcher {
+  background: var(--bg-card);
+  padding: 4px;
+  border: var(--border-width) solid var(--border-dark);
+  box-shadow: var(--shadow-hard-sm);
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: 4px;
+}
+
+.lang-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 0.82rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.lang-btn:hover {
+  color: var(--text-dark);
+}
+
+.lang-btn.active {
+  background: var(--cyan);
+  color: var(--text-dark);
+  border: 2px solid var(--border-dark);
+  box-shadow: 2px 2px 0px #000;
+}
+
 /* ==========================================================================
    CENTERED HERO SEARCH SECTION (DOTTO STYLE)
    ========================================================================== */

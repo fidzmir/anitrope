@@ -52,13 +52,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const animeModalAnilistLink = document.getElementById("anime-modal-anilist-link");
   const animeModalMalLink = document.getElementById("anime-modal-mal-link");
 
+  // Language Switcher DOM Elements
+  const langBtnId = document.getElementById("lang-btn-id");
+  const langBtnEn = document.getElementById("lang-btn-en");
+  state.language = localStorage.getItem("anitrope_lang") || "id";
+
   // Initial Startup
   initHealthCheck();
   loadPresetTropes();
   loadFeaturedContent();
   initNewsFeed();
+  switchLanguage(state.language);
 
   // Event Listeners
+  if (langBtnId) langBtnId.addEventListener("click", () => switchLanguage("id"));
+  if (langBtnEn) langBtnEn.addEventListener("click", () => switchLanguage("en"));
+
   mediaTabAnime.addEventListener("click", () => switchMedia("anime"));
   mediaTabManga.addEventListener("click", () => switchMedia("manga"));
   
@@ -129,6 +138,78 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Switch Language (ID / EN)
+  function switchLanguage(lang) {
+    state.language = lang;
+    localStorage.setItem("anitrope_lang", lang);
+    if (lang === "id") {
+      if (langBtnId) langBtnId.classList.add("active");
+      if (langBtnEn) langBtnEn.classList.remove("active");
+    } else {
+      if (langBtnEn) langBtnEn.classList.add("active");
+      if (langBtnId) langBtnId.classList.remove("active");
+    }
+    updateUIStrings();
+  }
+
+  function updateUIStrings() {
+    const isEn = state.language === "en";
+    const navHome = document.getElementById("nav-home");
+    const navAbout = document.getElementById("nav-about");
+    const navPrivacy = document.getElementById("nav-privacy");
+    const navDisclaimer = document.getElementById("nav-disclaimer");
+    const heroTitle = document.querySelector(".hero-title");
+    const heroDesc = document.querySelector(".hero-desc");
+    const sectionLabelExamples = document.querySelector(".preset-tropes-section .section-label");
+    const modalSynopsisH3 = document.querySelector(".anime-modal-section h3");
+    const modalAiHeader = document.querySelector(".ai-match-header");
+    const modalWatchH3 = document.querySelector(".streaming-section h3");
+
+    if (navHome) navHome.textContent = isEn ? "Home" : "Beranda";
+    if (navAbout) navAbout.textContent = isEn ? "About" : "Tentang";
+    if (navPrivacy) navPrivacy.textContent = isEn ? "Privacy" : "Privasi";
+    if (navDisclaimer) navDisclaimer.textContent = isEn ? "Disclaimer" : "Penafian";
+
+    if (heroTitle) {
+      heroTitle.innerHTML = isEn 
+        ? 'Find Titles Based on <span>Specific Tropes & Situations</span>'
+        : 'Temukan Judul Berdasarkan <span>Situasi & Trope Spesifik</span>';
+    }
+    if (heroDesc) {
+      heroDesc.textContent = isEn
+        ? 'Tired of generic categories on MyAnimeList? Describe any unique situation or trope you want in natural language.'
+        : 'Bosan dengan kategori umum MyAnimeList? Tuliskan situasi atau trope spesifik yang Anda inginkan dalam bahasa alami.';
+    }
+
+    if (sectionLabelExamples) {
+      sectionLabelExamples.innerHTML = isEn ? '<span>💡</span> Try Example Specific Searches:' : '<span>💡</span> Coba Contoh Pencarian Spesifik:';
+    }
+
+    if (btnSearch) {
+      btnSearch.innerHTML = isEn ? '<span>⚡</span> Search Trope' : '<span>⚡</span> Cari Trope';
+    }
+
+    if (state.mediaType === "anime") {
+      searchInput.placeholder = isEn 
+        ? 'Example: "Romance anime with dense MC and conclusive ending..."'
+        : 'Contoh: "Cari anime romantis MC tidak peka ending tuntas..."';
+    } else {
+      searchInput.placeholder = isEn 
+        ? 'Example: "Isekai manga where MC focuses on shopkeeping/merchant..."'
+        : 'Contoh: "Cari manga isekai MC fokus jualan/bisnis..."';
+    }
+
+    if (resultsSectionTitle && !state.currentPrompt) {
+      resultsSectionTitle.textContent = isEn 
+        ? (state.mediaType === "anime" ? "🔥 Trending & Top Rated Anime" : "🔥 Trending & Top Rated Manga")
+        : (state.mediaType === "anime" ? "🔥 Trending & Top Rated Anime" : "🔥 Trending & Top Rated Manga");
+    }
+
+    if (modalSynopsisH3) modalSynopsisH3.textContent = isEn ? "📖 Summary / Synopsis" : "📖 Ringkasan / Sinopsis";
+    if (modalAiHeader) modalAiHeader.textContent = isEn ? "💡 Why It Matches Your Trope:" : "💡 Kenapa Cocok dengan Trope:";
+    if (modalWatchH3) modalWatchH3.textContent = isEn ? "📺 Official Streaming Platforms (Where to Watch)" : "📺 Tempat Nonton Resmi (Where to Watch)";
+  }
+
   // Switch Media (Anime / Manga)
   function switchMedia(type) {
     if (state.mediaType === type) return;
@@ -137,12 +218,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (type === "anime") {
       mediaTabAnime.classList.add("active");
       mediaTabManga.classList.remove("active");
-      searchInput.placeholder = 'Contoh: "Cari anime romantis MC tidak peka ending tuntas..."';
     } else {
       mediaTabManga.classList.add("active");
       mediaTabAnime.classList.remove("active");
-      searchInput.placeholder = 'Contoh: "Cari manga isekai MC fokus jualan/bisnis..."';
     }
+
+    updateUIStrings();
 
     if (state.currentPrompt) {
       handleSearch();
