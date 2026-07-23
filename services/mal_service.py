@@ -36,7 +36,7 @@ DEFAULT_FALLBACK_ANIME = [
         "status": "Currently Airing",
         "score": 8.73,
         "anilist_score": 8.8,
-        "synopsis": "Gol D. Roger was known as the 'Pirate King,' the strongest and most infamous being to have sailed the Grand Line...",
+        "synopsis": "Gol D. Roger was known as the 'Pirate King,' the strongest and most infamous being to have sailed the Grand Line. The capture and execution of Roger by the World Government brought a change throughout the world. His last words before his death revealed the existence of the greatest treasure in the world, One Piece. It was this revelation that brought about the Grand Age of Pirates, men who dreamed of finding One Piece—which promises an unlimited amount of riches and fame—and quite possibly the pinnacle of glory and the title of the Pirate King.\n\nEnter Monkey D. Luffy, a 17-year-old boy who defies your standard definition of a pirate. Rather than the popular persona of a wicked, hardened, toothless pirate ransacking villages for fun, Luffy's reason for being a pirate is one of pure wonder: the thought of an exciting adventure that leads him to intriguing people and ultimately, the promised treasure. Following in the footsteps of his childhood hero, Luffy and his crew travel across the Grand Line, experiencing crazy adventures, unveiling dark mysteries and battling formidable enemies, all in order to reach the most coveted of all fortunes—One Piece.",
         "genres": ["Action", "Adventure", "Fantasy"],
         "tags": ["Pirates", "Shounen", "Super Power"],
         "media_category": "anime"
@@ -54,7 +54,7 @@ DEFAULT_FALLBACK_ANIME = [
         "status": "Finished Airing",
         "score": 9.1,
         "anilist_score": 9.0,
-        "synopsis": "After a horrific alchemy experiment goes wrong in the Elric household, brothers Edward and Alphonse are left in a catastrophic new reality...",
+        "synopsis": "After a horrific alchemy experiment goes wrong in the Elric household, brothers Edward and Alphonse are left in a catastrophic new reality. Ignoring the alchemical taboo of human transmutation, the boys attempted to bring their recently deceased mother back to life. Instead, they suffered a brutal loss: Alphonse's body disintegrated while Edward lost a leg and then sacrificed his arm to keep Alphonse's soul bound to the physical realm by anchoring it to a suit of armor.\n\nRescued by their neighbors Pinako Rockbell and her granddaughter Winry, Edward receives prosthetic 'automail' limbs and vows to find the Philosopher's Stone to restore their bodies. Joining the State Alchemists as the 'Fullmetal Alchemist,' Edward and Alphonse uncover a nationwide conspiracy that threatens the entire realm of Amestris.",
         "genres": ["Action", "Adventure", "Drama", "Fantasy"],
         "tags": ["Alchemy", "Military", "Orphan", "Shounen"],
         "media_category": "anime"
@@ -75,7 +75,7 @@ DEFAULT_FALLBACK_MANGA = [
         "status": "Publishing",
         "score": 8.6,
         "anilist_score": 8.7,
-        "synopsis": "Maomao, a young woman trained in herbal medicine, is kidnapped and sold to the inner palace of the imperial court...",
+        "synopsis": "Maomao, a young woman trained in herbal medicine, is kidnapped and sold to the inner palace of the imperial court. Though she intends to serve out her sentence quietly without attracting attention, her insatiable curiosity and sharp mind draw her into solving medical mysteries, poisons, and political intrigues surrounding the Emperor's consorts.",
         "genres": ["Drama", "Mystery", "Historical"],
         "tags": ["Medicine", "Historical", "Female Protagonist"],
         "media_category": "manga"
@@ -406,8 +406,6 @@ class MALService:
                     sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', syn) if len(s.strip()) > 15]
                     if sentences:
                         first_sent = sentences[0]
-                        if len(first_sent) > 160:
-                            first_sent = first_sent[:157] + "..."
 
                 if first_sent and matching_labels:
                     labels_str = ", ".join(matching_labels[:3])

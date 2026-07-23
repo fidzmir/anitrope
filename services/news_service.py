@@ -120,7 +120,7 @@ class NewsService:
                     if not title or not link:
                         continue
 
-                    clean_desc = self._clean_html_text(desc_html)[:280]
+                    clean_desc = self._clean_html_text(desc_html)
                     img_url = self._extract_image_url(item, desc_html, title)
 
                     news_items.append({
@@ -155,7 +155,7 @@ class NewsService:
                             "link": entry.get("url") or f"https://myanimelist.net/anime/{entry.get('mal_id')}",
                             "pub_date": entry.get("status") or "Airing",
                             "source": "Jikan Spotlight",
-                            "description": entry.get("synopsis", "")[:280],
+                            "description": entry.get("synopsis", ""),
                             "image_url": img_url
                         })
         except Exception as e:

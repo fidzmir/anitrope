@@ -39,6 +39,13 @@ query ($search: String, $type: MediaType, $page: Int, $perPage: Int) {
         isMediaSpoiler
       }
       siteUrl
+      externalLinks {
+        id
+        site
+        url
+        type
+        icon
+      }
     }
   }
 }
@@ -72,6 +79,13 @@ query ($type: MediaType, $genre_in: [String], $tag_in: [String], $page: Int, $pe
         isMediaSpoiler
       }
       siteUrl
+      externalLinks {
+        id
+        site
+        url
+        type
+        icon
+      }
     }
   }
 }
@@ -274,7 +288,26 @@ class AniListService:
             score_10 = round(avg_score / 10.0, 2) if avg_score else None
 
             desc_clean = item.get("description") or ""
+            desc_clean = re.sub(r'<br\s*/?>', '\n', desc_clean, flags=re.IGNORECASE)
+            desc_clean = re.sub(r'</?p>', '\n\n', desc_clean, flags=re.IGNORECASE)
             desc_clean = re.sub(r'<[^>]+>', '', desc_clean)
+            desc_clean = re.sub(r'\n{3,}', '\n\n', desc_clean).strip()
+
+            raw_links = item.get("externalLinks") or []
+            streaming_links = []
+            FREE_KEYWORDS = {"youtube", "bilibili", "bstation", "iqiyi", "iq", "muse asia", "ani-one", "tubi", "pluto"}
+            for ext in raw_links:
+                site = ext.get("site") or ""
+                url = ext.get("url") or ""
+                link_type = ext.get("type") or ""
+                if link_type == "STREAMING" or any(p in site.lower() for p in ["crunchyroll", "netflix", "bilibili", "iqiyi", "hulu", "amazon", "youtube", "funimation", "vrv", "hidive"]):
+                    is_free = any(k in site.lower() for k in FREE_KEYWORDS)
+                    streaming_links.append({
+                        "site": site,
+                        "url": url,
+                        "is_free": is_free,
+                        "icon": ext.get("icon")
+                    })
 
             candidates.append({
                 "anilist_id": item.get("id"),
@@ -293,6 +326,7 @@ class AniListService:
                 "synopsis": desc_clean,
                 "genres": item.get("genres", []),
                 "tags": clean_tags[:8],
+                "streaming_links": streaming_links,
                 "source": "AniList",
                 "media_category": media_type.lower()
             })

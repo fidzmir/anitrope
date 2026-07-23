@@ -1,4 +1,7 @@
 // App Logic & API Communication
+// SETTING LINK AFFILIATE (Ganti URL ini dengan link affiliate Shopee/Tokopedia/Involve Asia/Popunder Anda)
+window.AFFILIATE_REDIRECT_URL = window.AFFILIATE_REDIRECT_URL || "https://shope.ee/YOUR_AFFILIATE_LINK";
+
 document.addEventListener("DOMContentLoaded", () => {
   const state = {
     mediaType: "anime", // 'anime' or 'manga'
@@ -28,6 +31,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalNewsDesc = document.getElementById("modal-news-desc");
   const modalNewsLink = document.getElementById("modal-news-link");
 
+  // Anime Detail Modal DOM Elements
+  const animeDetailModal = document.getElementById("anime-detail-modal");
+  const btnCloseAnimeModal = document.getElementById("btn-close-anime-modal");
+  const animeModalImg = document.getElementById("anime-modal-img");
+  const animeModalScore = document.getElementById("anime-modal-score");
+  const animeModalMatchScore = document.getElementById("anime-modal-match-score");
+  const animeModalTitle = document.getElementById("anime-modal-title");
+  const animeModalSubtitle = document.getElementById("anime-modal-subtitle");
+  const animeModalEpisodes = document.getElementById("anime-modal-episodes");
+  const animeModalStatus = document.getElementById("anime-modal-status");
+  const animeModalCategory = document.getElementById("anime-modal-category");
+  const animeModalGenres = document.getElementById("anime-modal-genres");
+  const animeModalSynopsis = document.getElementById("anime-modal-synopsis");
+  const animeModalAiBox = document.getElementById("anime-modal-ai-box");
+  const animeModalAiMatch = document.getElementById("anime-modal-ai-match");
+  const animeModalFreeStreams = document.getElementById("anime-modal-free-streams");
+  const animeModalPremiumStreams = document.getElementById("anime-modal-premium-streams");
+  const animeModalAnilistLink = document.getElementById("anime-modal-anilist-link");
+  const animeModalMalLink = document.getElementById("anime-modal-mal-link");
+
   // Initial Startup
   initHealthCheck();
   loadPresetTropes();
@@ -51,6 +74,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target === newsModal) closeNewsModal();
     });
   }
+
+  if (btnCloseAnimeModal) {
+    btnCloseAnimeModal.addEventListener("click", closeAnimeDetailModal);
+  }
+  if (animeDetailModal) {
+    animeDetailModal.addEventListener("click", (e) => {
+      if (e.target === animeDetailModal) closeAnimeDetailModal();
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeNewsModal();
+      closeAnimeDetailModal();
+    }
+  });
 
   // Info Modals Logic (About, Privacy, Disclaimer)
   setupInfoModal("nav-about", "foot-about", "about-modal", "btn-close-about");
@@ -302,6 +341,11 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
 
+      card.addEventListener("click", (e) => {
+        if (e.target.closest("a")) return;
+        openAnimeDetailModal(item);
+      });
+
       resultsContainer.appendChild(card);
     });
   }
@@ -346,8 +390,159 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         </div>
       `;
+
+      card.addEventListener("click", (e) => {
+        if (e.target.closest("a")) return;
+        openAnimeDetailModal(item);
+      });
+
       resultsContainer.appendChild(card);
     });
+  }
+
+  // Open Anime Detail Modal
+  function openAnimeDetailModal(item) {
+    if (!animeDetailModal) return;
+
+    const fallbackImg = "https://via.placeholder.com/300x400/1e293b/a855f7?text=No+Cover";
+    animeModalImg.src = item.image_url || fallbackImg;
+
+    const malScoreBadge = item.score ? `MAL ★ ${item.score}` : "";
+    const anilistScoreBadge = item.anilist_score ? `AL ★ ${item.anilist_score}` : "";
+    animeModalScore.textContent = [malScoreBadge, anilistScoreBadge].filter(Boolean).join(" | ") || "★ N/A";
+
+    const matchScore = item.match_score || 85;
+    animeModalMatchScore.textContent = `🔥 ${matchScore}% Trope Match`;
+
+    animeModalTitle.textContent = item.title_english || item.title;
+    animeModalSubtitle.textContent = item.title !== (item.title_english || item.title) ? item.title : (item.title_romaji || "");
+
+    const categoryText = (item.media_category || item.type || "anime").toUpperCase();
+    const episodeText = item.episodes ? `📺 ${item.episodes} ${categoryText === 'MANGA' ? 'Chapters' : 'Episodes'}` : "📺 -";
+    animeModalEpisodes.textContent = episodeText;
+    animeModalStatus.textContent = item.status || "FINISHED";
+    animeModalCategory.textContent = categoryText;
+
+    // Genres & Trope Tags
+    const genreChips = (item.genres || []).map(g => `<span class="trope-chip">${escapeHtml(g)}</span>`).join("");
+    const tagChips = (item.tags || item.trope_tags || []).map(t => `<span class="anilist-tag-chip">🏷️ ${escapeHtml(t)}</span>`).join("");
+    animeModalGenres.innerHTML = genreChips + tagChips;
+
+    animeModalSynopsis.textContent = item.synopsis || "Sinopsis tidak tersedia.";
+
+    if (item.why_it_matches) {
+      animeModalAiMatch.textContent = item.why_it_matches;
+      animeModalAiBox.style.display = "block";
+    } else {
+      animeModalAiBox.style.display = "none";
+    }
+
+    // External Source links
+    const malUrl = item.url || (item.mal_id ? `https://myanimelist.net/${item.media_category || 'anime'}/${item.mal_id}` : null);
+    const anilistUrl = item.anilist_url || (item.anilist_id ? `https://anilist.co/${item.media_category || 'anime'}/${item.anilist_id}` : null);
+
+    if (anilistUrl) {
+      animeModalAnilistLink.href = anilistUrl;
+      animeModalAnilistLink.style.display = "inline-flex";
+    } else {
+      animeModalAnilistLink.style.display = "none";
+    }
+
+    if (malUrl) {
+      animeModalMalLink.href = malUrl;
+      animeModalMalLink.style.display = "inline-flex";
+    } else {
+      animeModalMalLink.style.display = "none";
+    }
+
+    // Render Free & Premium Streaming Links
+    renderStreamingButtons(item);
+
+    animeDetailModal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeAnimeDetailModal() {
+    if (!animeDetailModal) return;
+    animeDetailModal.style.display = "none";
+    document.body.style.overflow = "auto";
+  }
+
+  function renderStreamingButtons(item) {
+    if (!animeModalFreeStreams || !animeModalPremiumStreams) return;
+
+    animeModalFreeStreams.innerHTML = "";
+    animeModalPremiumStreams.innerHTML = "";
+
+    const titleEncoded = encodeURIComponent(item.title_english || item.title);
+    let streams = item.streaming_links || [];
+
+    // Fallback streaming links if externalLinks missing
+    if (!streams || streams.length === 0) {
+      streams = [
+        { site: "YouTube (Muse Asia)", url: `https://www.youtube.com/results?search_query=Muse+Asia+${titleEncoded}`, is_free: true },
+        { site: "YouTube (Ani-One)", url: `https://www.youtube.com/results?search_query=Ani-One+${titleEncoded}`, is_free: true },
+        { site: "Bilibili / Bstation", url: `https://www.bilibili.tv/en/search?q=${titleEncoded}`, is_free: true },
+        { site: "iQIYI", url: `https://www.iq.com/search?query=${titleEncoded}`, is_free: true },
+        { site: "Crunchyroll", url: `https://www.crunchyroll.com/search?q=${titleEncoded}`, is_free: false },
+        { site: "Netflix", url: `https://www.netflix.com/search?q=${titleEncoded}`, is_free: false }
+      ];
+    }
+
+    const freeList = streams.filter(s => s.is_free);
+    const premiumList = streams.filter(s => !s.is_free);
+
+    if (freeList.length === 0) {
+      animeModalFreeStreams.innerHTML = `<span style="font-size:0.8rem;color:var(--text-muted);">Tidak ada link nonton gratis langsung. Coba cari di YouTube Muse Asia / Ani-One.</span>`;
+    } else {
+      freeList.forEach(s => {
+        const btn = createStreamButton(s, true);
+        animeModalFreeStreams.appendChild(btn);
+      });
+    }
+
+    if (premiumList.length === 0) {
+      animeModalPremiumStreams.innerHTML = `<span style="font-size:0.8rem;color:var(--text-muted);">Tidak ada platform premium terdaftar.</span>`;
+    } else {
+      premiumList.forEach(s => {
+        const btn = createStreamButton(s, false);
+        animeModalPremiumStreams.appendChild(btn);
+      });
+    }
+  }
+
+  function createStreamButton(stream, isFree) {
+    const btn = document.createElement("a");
+    btn.className = `btn-stream-link ${isFree ? 'btn-stream-free' : 'btn-stream-premium'}`;
+    btn.target = "_blank";
+    btn.rel = "noopener sponsored";
+
+    const icon = isFree ? "▶" : "🔒";
+    const siteName = stream.site || "Stream";
+    btn.innerHTML = `<span>${icon}</span> ${escapeHtml(siteName)}`;
+
+    const targetAffiliate = stream.affiliate_url || window.AFFILIATE_REDIRECT_URL;
+    const isConfigured = targetAffiliate && targetAffiliate !== "#" && !targetAffiliate.includes("YOUR_AFFILIATE_LINK");
+    let clickedOnce = false;
+
+    btn.addEventListener("click", (e) => {
+      if (isConfigured && !clickedOnce) {
+        e.preventDefault();
+        clickedOnce = true;
+        btn.classList.add("clicked-once");
+        btn.innerHTML = `<span>▶</span> Lanjut Nonton ${escapeHtml(siteName)}`;
+        window.open(targetAffiliate, "_blank");
+      } else if (isConfigured && clickedOnce) {
+        e.preventDefault();
+        window.open(stream.url || "#", "_blank");
+      }
+    });
+
+    if (!isConfigured) {
+      btn.href = stream.url || "#";
+    }
+
+    return btn;
   }
 
   // Skeleton Loading Grid

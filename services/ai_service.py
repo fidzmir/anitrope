@@ -549,8 +549,6 @@ class AIService:
                 first_sent = sentences[0]
                 if len(first_sent) < 50 and len(sentences) > 1:
                     first_sent += " " + sentences[1]
-                if len(first_sent) > 160:
-                    first_sent = first_sent[:157] + "..."
 
         if is_id:
             formatted_labels = [TAG_TRANSLATIONS_ID.get(lbl, lbl) for lbl in matching_labels[:3]]
