@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hyper-Specific Mood & Trope Finder untuk Anime & Manga berbasis MyAnimeList API & Gemini 2.0 Flash AI. Cari judul berdasarkan situasi unik dan trope spesifik.">
+  <title>AniTrope - Hyper-Specific Mood & Trope Finder</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
+</head>
+<body>
+  <!-- Atmospheric Background Glow Orbs -->
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="app-container">
+    <!-- Live Anime News Ticker Banner -->
+    <div id="top-news-ticker" class="news-ticker-bar">
+      <div class="news-ticker-badge">
+        <span class="live-pulse"></span> LIVE NEWS
+      </div>
+      <div class="news-ticker-viewport">
+        <div id="news-ticker-track" class="news-ticker-track">
+          <a class="news-ticker-item" href="#" onclick="event.preventDefault();">
+            <img class="news-ticker-thumb" src="https://cdn.myanimelist.net/images/anime/1171/109222.jpg" alt="News thumb" />
+            <span class="news-source-badge">ANN</span>
+            <span>Agri Uma's Studio Cabana Manga Gets TV Anime Project</span>
+            <span style="color: var(--border-glass); margin: 0 0.5rem;">•</span>
+          </a>
+          <a class="news-ticker-item" href="#" onclick="event.preventDefault();">
+            <img class="news-ticker-thumb" src="https://cdn.myanimelist.net/images/anime/1000/140484.jpg" alt="News thumb" />
+            <span class="news-source-badge crunchyroll">Crunchyroll</span>
+            <span>To You in the Beyond Anime Film Reveals Trailer & Theme Song</span>
+            <span style="color: var(--border-glass); margin: 0 0.5rem;">•</span>
+          </a>
+          <a class="news-ticker-item" href="#" onclick="event.preventDefault();">
+            <img class="news-ticker-thumb" src="https://cdn.myanimelist.net/images/anime/1018/141042.jpg" alt="News thumb" />
+            <span class="news-source-badge">ANN</span>
+            <span>Live-Action Blue Lock Film Previews Entrance Exam Video</span>
+            <span style="color: var(--border-glass); margin: 0 0.5rem;">•</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+      <div class="logo-container">
+        <div class="logo-icon">🔮</div>
+        <div class="logo-text">
+          <h1>AniTrope</h1>
+          <p>Hyper-Specific Mood & Trope Finder</p>
+        </div>
+      </div>
+
+      <div class="header-meta">
+        <div class="media-switcher">
+          <button id="tab-anime" class="media-tab active" type="button">Anime</button>
+          <button id="tab-manga" class="media-tab" type="button">Manga</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Hero Search Section -->
+    <main>
+      <section class="hero-section">
+        <h2 class="hero-title">
+          Temukan Judul Berdasarkan <span>Situasi & Trope Spesifik</span>
+        </h2>
+        <p class="hero-desc">
+          Bosan dengan kategori umum MyAnimeList? Tuliskan situasi atau trope spesifik yang Anda inginkan dalam bahasa alami.
+        </p>
+
+        <div class="search-box-container">
+          <div class="search-glass-card">
+            <span class="search-icon">🔍</span>
+            <input 
+              id="search-input" 
+              type="text" 
+              class="search-input" 
+              placeholder='Contoh: "Cari anime romantis MC tidak peka ending tuntas..."'
+              autocomplete="off"
+            >
+            <button id="btn-search" class="btn-search" type="button">
+              <span>⚡</span> Cari Trope
+            </button>
+          </div>
+        </div>
+
+        <!-- Preset Trope Pills -->
+        <div class="preset-tropes-section">
+          <div class="section-label">
+            <span>💡</span> Coba Contoh Pencarian Spesifik:
+          </div>
+          <div id="trope-pills" class="trope-pills-container">
+            <!-- Populated dynamically via app.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Search Strategy & Meta Info Bar -->
+      <div id="search-meta-bar" class="search-meta-bar" style="display: none;">
+        <!-- Populated dynamically via app.js -->
+      </div>
+
+      <!-- Results Grid Section -->
+      <section class="results-section">
+        <div class="section-label" style="font-size: 1rem; margin-bottom: 1.25rem;">
+          <span id="results-section-title">🔥 Trending & Top Rated Anime</span>
+        </div>
+
+        <div id="results-container" class="results-grid">
+          <!-- Populated dynamically via app.js -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Cyber Glassmorphism News Detail Modal -->
+  <div id="news-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <button id="btn-close-modal" class="modal-close-btn" type="button">&times;</button>
+      <div class="modal-header">
+        <span id="modal-news-source" class="news-source-badge">ANN</span>
+        <span id="modal-news-date" class="modal-news-date">21 July 2026</span>
+      </div>
+      <h2 id="modal-news-title" class="modal-news-title">Judul Berita Anime</h2>
+      <div id="modal-image-wrap" class="modal-image-wrap" style="display: none;">
+        <img id="modal-news-image" src="" alt="News Image">
+      </div>
+      <p id="modal-news-desc" class="modal-news-desc">Ringkasan berita...</p>
+      <div class="modal-footer">
+        <a id="modal-news-link" href="#" target="_blank" rel="noopener" class="btn-read-article">
+          Baca Selengkapnya di Artikel Asli <span>↗</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

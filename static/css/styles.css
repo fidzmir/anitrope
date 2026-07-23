@@ -1,0 +1,975 @@
+/* ==========================================================================
+   DOTTO-UI RETRO CREAM DESIGN SYSTEM (FOR ANITROPE)
+   Inspired by Dotto UI (3.5px Solid Black Card Borders, Separated Inset Images,
+   5px Hard Black Offset Drop Shadows, Cream Paper Halftone Grid, High Contrast)
+   Typography: Clean Modern Fonts (Outfit & Plus Jakarta Sans) - Non-Pixelated
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Dotto Retro Cream Palette */
+  --bg-main: #fcf8f2;
+  --bg-card: #fffefb;
+  --bg-card-hover: #ffffff;
+  --bg-input: #ffffff;
+  --bg-subtle: #f4efe6;
+  
+  --border-width: 3.5px;
+  --border-dark: #000000;
+  --border-color: #000000;
+  
+  --shadow-color: #000000;
+  --shadow-hard-sm: 3px 3px 0px var(--shadow-color);
+  --shadow-hard-md: 5px 5px 0px var(--shadow-color);
+  --shadow-hard-lg: 8px 8px 0px var(--shadow-color);
+  
+  --shadow-pink: 4px 4px 0px #ff007a;
+  --shadow-cyan: 4px 4px 0px #00a8ff;
+  --shadow-yellow: 4px 4px 0px #ffc700;
+
+  /* Dotto Accents */
+  --pink: #ff007a;
+  --cyan: #00a8ff;
+  --yellow: #ffc700;
+  --purple: #8b5cf6;
+  --lime: #10b981;
+  
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #64748b;
+  --text-dark: #000000;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  --transition-fast: all 0.15s ease-out;
+  --transition-bounce: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-main);
+  background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  color: var(--text-main);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.app-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   DOTTO LIVE ANIME NEWS TICKER HEADER
+   ========================================================================== */
+.news-ticker-bar {
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-dark);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-pink);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  height: 48px;
+  position: relative;
+}
+
+.news-ticker-badge {
+  background: var(--pink);
+  color: #ffffff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 0 1.1rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  border-right: var(--border-width) solid var(--border-dark);
+  z-index: 2;
+}
+
+.live-pulse {
+  width: 10px;
+  height: 10px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-dot 1s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.8); opacity: 0.4; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.4; }
+}
+
+.news-ticker-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.news-ticker-track {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  white-space: nowrap;
+  animation: marquee-scroll 45s linear infinite;
+}
+
+.news-ticker-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.news-ticker-item {
+  color: var(--text-main);
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+.news-ticker-item:hover {
+  background: var(--yellow);
+  color: var(--text-dark);
+}
+
+.news-ticker-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--border-dark);
+  box-shadow: 2px 2px 0px #000;
+  flex-shrink: 0;
+}
+
+.news-source-badge {
+  background: var(--purple);
+  color: #ffffff;
+  border: 1.5px solid var(--border-dark);
+  box-shadow: 1.5px 1.5px 0px #000;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+}
+
+.news-source-badge.crunchyroll {
+  background: #f97316;
+}
+
+/* ==========================================================================
+   HEADER LOGO & MEDIA SWITCHER
+   ========================================================================== */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: var(--border-width) solid var(--border-dark);
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.logo-icon {
+  width: 52px;
+  height: 52px;
+  background: var(--pink);
+  border: var(--border-width) solid var(--border-dark);
+  box-shadow: var(--shadow-hard-sm);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+}
+
+.logo-text h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.3rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--text-dark);
+  line-height: 1.1;
+}
+
+.logo-text p {
+  font-size: 0.85rem;
+  color: #0284c7;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ai-status-badge {
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-dark);
+  box-shadow: var(--shadow-hard-sm);
+  border-radius: var(--radius-md);
+  padding: 0.55rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  background-color: var(--lime);
+  border: 1.5px solid var(--border-dark);
+  border-radius: 50%;
+}
+
+.media-switcher {
+  background: var(--bg-card);
+  padding: 4px;
+  border: var(--border-width) solid var(--border-dark);
+  box-shadow: var(--shadow-hard-sm);
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: 4px;
+}
+
+.media-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 0.88rem;
+  padding: 0.45rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.media-tab:hover {
+  color: var(--text-dark);
+}
+
+.media-tab.active {
+  background: var(--yellow);
+  color: var(--text-dark);
+  border: 2px solid var(--border-dark);
+  box-shadow: 2px 2px 0px #000;
+}
+
+/* ==========================================================================
+   CENTERED HERO SEARCH SECTION (DOTTO STYLE)
+   ========================================================================== */
+.hero-section {
+  text-align: center !important;
+  max-width: 900px;
+  margin: 0 auto 3rem auto;
+}
+
+.hero-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 900;
+  line-height: 1.25;
+  margin-bottom: 0.75rem;
+  color: var(--text-dark);
+}
+
+.hero-title span {
+  color: var(--pink);
+}
+
+.hero-desc {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.search-box-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 1.75rem;
+}
+
+.search-glass-card {
+  background: var(--bg-card) !important;
+  border: 3.5px solid #000000 !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+  border-radius: 18px !important;
+  padding: 0.75rem 0.85rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.85rem !important;
+  width: 100% !important;
+  max-width: 840px !important;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out !important;
+}
+
+.search-glass-card:focus-within {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 8px 8px 0px #000000 !important;
+}
+
+.search-icon {
+  font-size: 1.4rem;
+  padding-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1 !important;
+  width: 100% !important;
+  background: #ffffff !important;
+  border: 2.5px solid #000000 !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+  border-radius: 12px !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  padding: 0.9rem 1.1rem !important;
+  color: #0f172a !important;
+  outline: none !important;
+}
+
+.search-input::placeholder {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.btn-search {
+  background: var(--pink) !important;
+  color: #ffffff !important;
+  border: 3px solid #000000 !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 1.05rem !important;
+  font-weight: 900 !important;
+  padding: 0.9rem 1.85rem !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  transition: all 0.15s ease-out !important;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+.btn-search:hover {
+  background: #ff1a8c !important;
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+}
+
+.btn-search:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+}
+
+/* Preset Trope Pills (Centered) */
+.preset-tropes-section {
+  text-align: center !important;
+  margin-top: 2rem;
+}
+
+.preset-tropes-section .section-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: var(--text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.85rem;
+}
+
+.trope-pills-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 0.75rem !important;
+}
+
+.trope-pill {
+  background: var(--bg-card) !important;
+  color: var(--text-dark) !important;
+  border: 2.5px solid #000000 !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+  font-size: 0.88rem !important;
+  font-weight: 800 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: var(--radius-md) !important;
+  cursor: pointer !important;
+  transition: var(--transition-fast) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+}
+
+.trope-pill:hover {
+  background: var(--cyan) !important;
+  color: var(--text-dark) !important;
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 5px 5px 0px #000000 !important;
+}
+
+.trope-pill:active {
+  transform: translate(1px, 1px) !important;
+  box-shadow: 1.5px 1.5px 0px #000000 !important;
+}
+
+/* Search Strategy Meta Bar (Centered) */
+.search-meta-bar {
+  background: var(--yellow) !important;
+  border: 3.5px solid #000000 !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+  border-radius: 16px !important;
+  padding: 1.25rem 1.5rem !important;
+  margin: 0 auto 2.5rem auto !important;
+  max-width: 840px !important;
+  text-align: center !important;
+}
+
+.meta-title {
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+  color: var(--text-dark) !important;
+  margin-bottom: 0.6rem !important;
+}
+
+.meta-tags {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 0.6rem !important;
+}
+
+.meta-chip {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  color: var(--text-dark) !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  padding: 0.25rem 0.7rem !important;
+  border-radius: 6px !important;
+}
+
+/* ==========================================================================
+   NEAT DOTTO ANIME & MANGA CARD SYSTEM (SEPARATED WITH SOLID BORDERS)
+   ========================================================================== */
+.results-section {
+  margin-top: 1rem;
+}
+
+.results-section .section-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem !important; /* CLEAR 2REM GAP BETWEEN ALL CARDS */
+}
+
+/* Main Card Box (Supports both .card and .anime-card) */
+.card, .anime-card {
+  background: var(--bg-card) !important;
+  border: 3.5px solid #000000 !important; /* SOLID 3.5PX BLACK BORDER AROUND EVERY CARD */
+  box-shadow: 5px 5px 0px #000000 !important; /* 5PX SOLID HARD DROP SHADOW */
+  border-radius: var(--radius-lg) !important;
+  padding: 1.25rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out !important;
+  position: relative !important;
+  margin-bottom: 0.5rem;
+}
+
+.card:hover, .anime-card:hover {
+  background: var(--bg-card-hover) !important;
+  transform: translate(-3px, -3px) !important;
+  box-shadow: 8px 8px 0px #000000 !important;
+}
+
+/* Inset Image Frame (Supports both .card-image-wrap and .card-banner) */
+.card-image-wrap, .card-banner {
+  position: relative !important;
+  height: 350px !important;
+  width: 100% !important;
+  border: 2.5px solid #000000 !important; /* SOLID BLACK BORDER AROUND POSTER IMAGE */
+  border-radius: var(--radius-md) !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+  overflow: hidden !important;
+  background: var(--bg-subtle) !important;
+  margin-bottom: 1.1rem !important;
+  flex-shrink: 0 !important;
+}
+
+.card-image, .card-banner img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  transition: transform 0.3s ease !important;
+}
+
+.card:hover .card-image, .anime-card:hover .card-banner img {
+  transform: scale(1.04) !important;
+}
+
+/* Badges */
+.score-badge, .card-badge-rating {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  background: var(--yellow) !important;
+  color: var(--text-dark) !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 0.82rem !important;
+  font-weight: 900 !important;
+  padding: 0.25rem 0.65rem !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  border-radius: 8px !important;
+  z-index: 2 !important;
+}
+
+.match-score-pill, .card-badge-relevance {
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
+  background: var(--pink) !important;
+  color: #ffffff !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 0.82rem !important;
+  font-weight: 900 !important;
+  padding: 0.25rem 0.65rem !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  border-radius: 8px !important;
+  z-index: 2 !important;
+}
+
+/* Card Body & Content */
+.card-body, .card-content {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  gap: 0.85rem !important;
+}
+
+.card-title {
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 1.2rem !important;
+  font-weight: 900 !important;
+  color: var(--text-dark) !important;
+  line-height: 1.3 !important;
+}
+
+.card-sub-title {
+  font-size: 0.82rem !important;
+  color: var(--text-dim) !important;
+  font-weight: 700 !important;
+  margin-top: -0.4rem !important;
+}
+
+.trope-tags, .card-tags {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.4rem !important;
+}
+
+.trope-chip, .tag-chip {
+  background: var(--bg-subtle) !important;
+  border: 1.5px solid #000000 !important;
+  color: var(--text-dark) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  padding: 0.15rem 0.55rem !important;
+  border-radius: 6px !important;
+}
+
+.anilist-tag-chip {
+  background: #e0f2fe !important;
+  border: 1.5px solid #000000 !important;
+  color: #0369a1 !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  padding: 0.15rem 0.55rem !important;
+  border-radius: 6px !important;
+}
+
+.ai-match-box, .card-ai-reason {
+  background: #fef08a !important; /* Soft Dotto Gold/Yellow Accent */
+  border: 2.5px solid #000000 !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.85rem 1rem !important;
+  font-size: 0.86rem !important;
+  color: #0f172a !important;
+  line-height: 1.55 !important;
+  margin-top: 0.85rem !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 600 !important;
+}
+
+.ai-match-header {
+  font-family: 'Outfit', sans-serif !important;
+  font-weight: 900 !important;
+  color: #b45309 !important; /* Dark Amber Title */
+  margin-bottom: 0.35rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  font-size: 0.9rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+}
+
+.ai-match-text {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+.card-synopsis {
+  font-size: 0.82rem !important;
+  color: var(--text-muted) !important;
+  line-height: 1.5 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.card-footer {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding-top: 0.85rem !important;
+  border-top: 2px solid #000000 !important;
+  margin-top: auto !important;
+}
+
+.card-meta-info {
+  font-size: 0.78rem !important;
+  color: var(--text-muted) !important;
+  font-weight: 800 !important;
+}
+
+.card-source-links {
+  display: flex !important;
+  gap: 0.5rem !important;
+  align-items: center !important;
+}
+
+.btn-mal-link {
+  color: var(--text-dark) !important;
+  background: var(--cyan) !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  text-decoration: none !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+  padding: 0.25rem 0.65rem !important;
+  border-radius: 6px !important;
+  transition: var(--transition-fast) !important;
+}
+
+.btn-mal-link:hover {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+}
+
+.btn-anilist-link {
+  color: #ffffff !important;
+  background: var(--purple) !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  text-decoration: none !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+  padding: 0.25rem 0.65rem !important;
+  border-radius: 6px !important;
+  transition: var(--transition-fast) !important;
+}
+
+.btn-anilist-link:hover {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+}
+
+/* Skeleton Loading */
+.skeleton-card {
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-dark);
+  box-shadow: var(--shadow-hard-md);
+  border-radius: var(--radius-lg);
+  height: 520px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeleton-box {
+  background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-dark);
+}
+
+.skeleton-img { height: 320px; }
+.skeleton-title { height: 26px; width: 75%; }
+.skeleton-text { height: 18px; width: 100%; }
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Empty State */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-dark);
+  box-shadow: var(--shadow-hard-md);
+  border-radius: var(--radius-lg);
+}
+
+.empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+
+.empty-state h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--pink);
+  margin-bottom: 0.5rem;
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 3000;
+}
+
+.toast {
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-dark);
+  box-shadow: var(--shadow-pink);
+  color: var(--text-dark);
+  padding: 0.9rem 1.35rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  animation: slide-up 0.3s ease;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ==========================================================================
+   DOTTO MODAL POPUP SYSTEM
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.modal-card {
+  background: var(--bg-card);
+  border: 3.5px solid var(--border-dark);
+  box-shadow: var(--shadow-hard-lg);
+  border-radius: var(--radius-lg);
+  max-width: 600px;
+  width: 100%;
+  padding: 1.75rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--pink);
+  border: 2px solid var(--border-dark);
+  box-shadow: 2.5px 2.5px 0px #000;
+  color: #ffffff;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.modal-close-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3.5px 3.5px 0px #000;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-news-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.modal-news-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--text-dark);
+  line-height: 1.35;
+}
+
+.modal-image-wrap {
+  width: 100%;
+  max-height: 270px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 2.5px solid var(--border-dark);
+  box-shadow: 3px 3px 0px #000;
+}
+
+.modal-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal-news-desc {
+  font-size: 0.92rem;
+  color: var(--text-main);
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.modal-footer {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-read-article {
+  background: var(--cyan);
+  color: var(--text-dark);
+  border: var(--border-width) solid var(--border-dark);
+  box-shadow: 3.5px 3.5px 0px #000;
+  text-decoration: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 900;
+  padding: 0.65rem 1.35rem;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: var(--transition-fast);
+}
+
+.btn-read-article:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #000;
+}
+
+@media (max-width: 768px) {
+  header { flex-direction: column; align-items: flex-start; }
+  .hero-title { font-size: 1.8rem; }
+  .search-glass-card { flex-direction: column; }
+  .btn-search { width: 100%; justify-content: center; }
+  .results-grid { grid-template-columns: 1fr; }
+}
