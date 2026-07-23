@@ -200,7 +200,7 @@ async def search_tropes(req: SearchRequest):
 # Serve Static Frontend Files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def serve_index():
     return FileResponse("static/index.html")
 
