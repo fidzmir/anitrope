@@ -57,24 +57,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const langBtnEn = document.getElementById("lang-btn-en");
   state.language = localStorage.getItem("anitrope_lang") || "id";
 
-  // Initial Startup
-  initHealthCheck();
-  loadPresetTropes();
-  loadFeaturedContent();
-  initNewsFeed();
-  switchLanguage(state.language);
-
-  // Event Listeners
+  // Event Listeners Registration (MUST BE FIRST)
   if (langBtnId) langBtnId.addEventListener("click", () => switchLanguage("id"));
   if (langBtnEn) langBtnEn.addEventListener("click", () => switchLanguage("en"));
 
-  mediaTabAnime.addEventListener("click", () => switchMedia("anime"));
-  mediaTabManga.addEventListener("click", () => switchMedia("manga"));
+  if (mediaTabAnime) mediaTabAnime.addEventListener("click", () => switchMedia("anime"));
+  if (mediaTabManga) mediaTabManga.addEventListener("click", () => switchMedia("manga"));
   
-  btnSearch.addEventListener("click", handleSearch);
-  searchInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") handleSearch();
-  });
+  if (btnSearch) btnSearch.addEventListener("click", handleSearch);
+  if (searchInput) {
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") handleSearch();
+    });
+  }
 
   if (btnCloseModal) {
     btnCloseModal.addEventListener("click", closeNewsModal);
@@ -107,10 +102,11 @@ document.addEventListener("DOMContentLoaded", () => {
   setupInfoModal("nav-disclaimer", "foot-disclaimer", "disclaimer-modal", "btn-close-disclaimer");
 
   // Home Nav Reset
-  const resetHome = () => {
+  const resetHome = (e) => {
+    if (e) e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (state.currentPrompt) {
-      searchInput.value = "";
+      if (searchInput) searchInput.value = "";
       state.currentPrompt = "";
       loadFeaturedContent();
     }
@@ -121,10 +117,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function setupInfoModal(navId, footId, modalId, closeBtnId) {
     const modal = document.getElementById(modalId);
     const closeBtn = document.getElementById(closeBtnId);
-    const openModal = () => {
+    const openModal = (e) => {
+      if (e) e.preventDefault();
       if (modal) modal.style.display = "flex";
     };
-    const closeModal = () => {
+    const closeModal = (e) => {
+      if (e) e.preventDefault();
       if (modal) modal.style.display = "none";
     };
 
@@ -137,6 +135,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   }
+
+  // Initial Startup
+  initHealthCheck();
+  loadPresetTropes();
+  loadFeaturedContent();
+  initNewsFeed();
+  switchLanguage(state.language);
 
   // Switch Language (ID / EN)
   function switchLanguage(lang) {
@@ -153,63 +158,69 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateUIStrings() {
-    const isEn = state.language === "en";
-    const navHome = document.getElementById("nav-home");
-    const navAbout = document.getElementById("nav-about");
-    const navPrivacy = document.getElementById("nav-privacy");
-    const navDisclaimer = document.getElementById("nav-disclaimer");
-    const heroTitle = document.querySelector(".hero-title");
-    const heroDesc = document.querySelector(".hero-desc");
-    const sectionLabelExamples = document.querySelector(".preset-tropes-section .section-label");
-    const modalSynopsisH3 = document.querySelector(".anime-modal-section h3");
-    const modalAiHeader = document.querySelector(".ai-match-header");
-    const modalWatchH3 = document.querySelector(".streaming-section h3");
+    try {
+      const isEn = state.language === "en";
+      const navHome = document.getElementById("nav-home");
+      const navAbout = document.getElementById("nav-about");
+      const navPrivacy = document.getElementById("nav-privacy");
+      const navDisclaimer = document.getElementById("nav-disclaimer");
+      const heroTitle = document.querySelector(".hero-title");
+      const heroDesc = document.querySelector(".hero-desc");
+      const sectionLabelExamples = document.querySelector(".preset-tropes-section .section-label");
+      const modalSynopsisH3 = document.querySelector(".anime-modal-section h3");
+      const modalAiHeader = document.querySelector(".ai-match-header");
+      const modalWatchH3 = document.querySelector(".streaming-section h3");
 
-    if (navHome) navHome.textContent = isEn ? "Home" : "Beranda";
-    if (navAbout) navAbout.textContent = isEn ? "About" : "Tentang";
-    if (navPrivacy) navPrivacy.textContent = isEn ? "Privacy" : "Privasi";
-    if (navDisclaimer) navDisclaimer.textContent = isEn ? "Disclaimer" : "Penafian";
+      if (navHome) navHome.textContent = isEn ? "Home" : "Beranda";
+      if (navAbout) navAbout.textContent = isEn ? "About" : "Tentang";
+      if (navPrivacy) navPrivacy.textContent = isEn ? "Privacy" : "Privasi";
+      if (navDisclaimer) navDisclaimer.textContent = isEn ? "Disclaimer" : "Penafian";
 
-    if (heroTitle) {
-      heroTitle.innerHTML = isEn 
-        ? 'Find Titles Based on <span>Specific Tropes & Situations</span>'
-        : 'Temukan Judul Berdasarkan <span>Situasi & Trope Spesifik</span>';
+      if (heroTitle) {
+        heroTitle.innerHTML = isEn 
+          ? 'Find Titles Based on <span>Specific Tropes & Situations</span>'
+          : 'Temukan Judul Berdasarkan <span>Situasi & Trope Spesifik</span>';
+      }
+      if (heroDesc) {
+        heroDesc.textContent = isEn
+          ? 'Tired of generic categories on MyAnimeList? Describe any unique situation or trope you want in natural language.'
+          : 'Bosan dengan kategori umum MyAnimeList? Tuliskan situasi atau trope spesifik yang Anda inginkan dalam bahasa alami.';
+      }
+
+      if (sectionLabelExamples) {
+        sectionLabelExamples.innerHTML = isEn ? '<span>💡</span> Try Example Specific Searches:' : '<span>💡</span> Coba Contoh Pencarian Spesifik:';
+      }
+
+      if (btnSearch) {
+        btnSearch.innerHTML = isEn ? '<span>⚡</span> Search Trope' : '<span>⚡</span> Cari Trope';
+      }
+
+      if (searchInput) {
+        if (state.mediaType === "anime") {
+          searchInput.placeholder = isEn 
+            ? 'Example: "Romance anime with dense MC and conclusive ending..."'
+            : 'Contoh: "Cari anime romantis MC tidak peka ending tuntas..."';
+        } else {
+          searchInput.placeholder = isEn 
+            ? 'Example: "Isekai manga where MC focuses on shopkeeping/merchant..."'
+            : 'Contoh: "Cari manga isekai MC fokus jualan/bisnis..."';
+        }
+      }
+
+      if (resultsSectionTitle && !state.currentPrompt) {
+        resultsSectionTitle.textContent = isEn 
+          ? (state.mediaType === "anime" ? "🔥 Trending & Top Rated Anime" : "🔥 Trending & Top Rated Manga")
+          : (state.mediaType === "anime" ? "🔥 Trending & Top Rated Anime" : "🔥 Trending & Top Rated Manga");
+      }
+
+      if (modalSynopsisH3) modalSynopsisH3.textContent = isEn ? "📖 Summary / Synopsis" : "📖 Ringkasan / Sinopsis";
+      if (modalAiHeader) modalAiHeader.textContent = isEn ? "💡 Why It Matches Your Trope:" : "💡 Kenapa Cocok dengan Trope:";
+      if (modalWatchH3) modalWatchH3.textContent = isEn ? "📺 Official Streaming Platforms (Where to Watch)" : "📺 Tempat Nonton Resmi (Where to Watch)";
+
+      renderPresetTropes();
+    } catch (err) {
+      console.warn("Error updating UI strings:", err);
     }
-    if (heroDesc) {
-      heroDesc.textContent = isEn
-        ? 'Tired of generic categories on MyAnimeList? Describe any unique situation or trope you want in natural language.'
-        : 'Bosan dengan kategori umum MyAnimeList? Tuliskan situasi atau trope spesifik yang Anda inginkan dalam bahasa alami.';
-    }
-
-    if (sectionLabelExamples) {
-      sectionLabelExamples.innerHTML = isEn ? '<span>💡</span> Try Example Specific Searches:' : '<span>💡</span> Coba Contoh Pencarian Spesifik:';
-    }
-
-    if (btnSearch) {
-      btnSearch.innerHTML = isEn ? '<span>⚡</span> Search Trope' : '<span>⚡</span> Cari Trope';
-    }
-
-    if (state.mediaType === "anime") {
-      searchInput.placeholder = isEn 
-        ? 'Example: "Romance anime with dense MC and conclusive ending..."'
-        : 'Contoh: "Cari anime romantis MC tidak peka ending tuntas..."';
-    } else {
-      searchInput.placeholder = isEn 
-        ? 'Example: "Isekai manga where MC focuses on shopkeeping/merchant..."'
-        : 'Contoh: "Cari manga isekai MC fokus jualan/bisnis..."';
-    }
-
-    if (resultsSectionTitle && !state.currentPrompt) {
-      resultsSectionTitle.textContent = isEn 
-        ? (state.mediaType === "anime" ? "🔥 Trending & Top Rated Anime" : "🔥 Trending & Top Rated Manga")
-        : (state.mediaType === "anime" ? "🔥 Trending & Top Rated Anime" : "🔥 Trending & Top Rated Manga");
-    }
-
-    if (modalSynopsisH3) modalSynopsisH3.textContent = isEn ? "📖 Summary / Synopsis" : "📖 Ringkasan / Sinopsis";
-    if (modalAiHeader) modalAiHeader.textContent = isEn ? "💡 Why It Matches Your Trope:" : "💡 Kenapa Cocok dengan Trope:";
-    if (modalWatchH3) modalWatchH3.textContent = isEn ? "📺 Official Streaming Platforms (Where to Watch)" : "📺 Tempat Nonton Resmi (Where to Watch)";
-
-    renderPresetTropes();
   }
 
   function formatWhyText(text) {
