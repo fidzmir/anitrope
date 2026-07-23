@@ -557,8 +557,10 @@ class AIService:
 
         if first_sent and formatted_labels:
             labels_str = ", ".join(formatted_labels)
-            prefix = "Alasan dipilih" if is_id else "Why selected"
-            return f"{prefix}: Serial '{title}' mengangkat alur cerita '{first_sent}' yang secara khusus berfokus pada {labels_str}."
+            if is_id:
+                return f"Alasan dipilih: Serial '{title}' mengangkat alur cerita '{first_sent}' yang secara khusus berfokus pada {labels_str}."
+            else:
+                return f"Why selected: '{title}' features storyline '{first_sent}' focusing specifically on {labels_str}."
         elif formatted_labels:
             labels_str = ", ".join(formatted_labels)
             if is_id:

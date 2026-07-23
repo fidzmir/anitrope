@@ -53,31 +53,41 @@ class SearchRequest(BaseModel):
 PRESET_TROPES = [
     {
         "label": "Romance MC Tidak Peka",
+        "label_en": "Dense Romance MC",
         "prompt": "Cari anime romantis yang karakter utamanya tidak peka, tapi ending-nya tidak menggantung.",
+        "prompt_en": "Search for romance anime with a dense main character and a conclusive ending.",
         "category": "Romance",
         "type": "anime"
     },
     {
         "label": "Manga Isekai Bisnis/Jualan",
+        "label_en": "Isekai Merchant Manga",
         "prompt": "Cari manga isekai yang MC-nya fokus jualan/bisnis, bukan bertarung.",
+        "prompt_en": "Search for isekai manga where the main character focuses on business and merchant trading rather than fighting.",
         "category": "Isekai",
         "type": "manga"
     },
     {
         "label": "MC Overpowered Pura-pura Lemah",
+        "label_en": "Overpowered MC Hiding Power",
         "prompt": "Cari anime fantasi dengan MC super kuat tapi sengaja menyembunyikan kekuatannya dari teman-temannya.",
+        "prompt_en": "Search for fantasy anime with an overpowered MC who intentionally hides their true strength from everyone.",
         "category": "Action",
         "type": "anime"
     },
     {
         "label": "Wholesome Slice of Life Cuteness",
+        "label_en": "Wholesome Slice of Life",
         "prompt": "Cari anime slice of life yang sangat tenang, wholesome, tanpa drama berat untuk penyembuhan stres.",
+        "prompt_en": "Search for calm, wholesome slice of life anime with zero heavy drama for stress relief.",
         "category": "Healing",
         "type": "anime"
     },
     {
         "label": "Manga Thriller Psychological Mind Games",
+        "label_en": "Psychological Mind Games Manga",
         "prompt": "Cari manga misteri psikologis dengan pertarungan adu otak intens ala Death Note atau Liar Game.",
+        "prompt_en": "Search for psychological mystery manga featuring intense mind games like Death Note or Liar Game.",
         "category": "Thriller",
         "type": "manga"
     }

@@ -208,6 +208,29 @@ document.addEventListener("DOMContentLoaded", () => {
     if (modalSynopsisH3) modalSynopsisH3.textContent = isEn ? "📖 Summary / Synopsis" : "📖 Ringkasan / Sinopsis";
     if (modalAiHeader) modalAiHeader.textContent = isEn ? "💡 Why It Matches Your Trope:" : "💡 Kenapa Cocok dengan Trope:";
     if (modalWatchH3) modalWatchH3.textContent = isEn ? "📺 Official Streaming Platforms (Where to Watch)" : "📺 Tempat Nonton Resmi (Where to Watch)";
+
+    renderPresetTropes();
+  }
+
+  function formatWhyText(text) {
+    if (!text) return "";
+    if (state.language === "en") {
+      return text
+        .replace(/^Alasan dipilih:\s*/gi, "Why selected: ")
+        .replace(/mengangkat alur cerita/gi, "features storyline")
+        .replace(/yang secara khusus berfokus pada/gi, "focusing specifically on")
+        .replace(/menonjolkan elemen alur/gi, "highlights story elements of")
+        .replace(/yang sangat relevan/gi, "which are highly relevant")
+        .replace(/berfokus pada tema utama/gi, "focuses on main themes in");
+    } else {
+      return text
+        .replace(/^Why selected:\s*/gi, "Alasan dipilih: ")
+        .replace(/features storyline/gi, "mengangkat alur cerita")
+        .replace(/focusing specifically on/gi, "yang secara khusus berfokus pada")
+        .replace(/highlights story elements of/gi, "menonjolkan elemen alur")
+        .replace(/which are highly relevant/gi, "yang sangat relevan")
+        .replace(/focuses on main themes in/gi, "berfokus pada tema utama");
+    }
   }
 
   // Switch Media (Anime / Manga)
@@ -250,35 +273,45 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Load Preset Tropes
+  let cachedPresetTropes = [];
+
   async function loadPresetTropes() {
     try {
       const res = await fetch("/api/tropes");
-      const tropes = await res.json();
-      tropePillsContainer.innerHTML = "";
-      
-      tropes.forEach(t => {
-        const pill = document.createElement("button");
-        pill.className = "trope-pill";
-        pill.innerHTML = `<span>✨</span> ${t.label}`;
-        pill.addEventListener("click", () => {
-          if (t.type) {
-            state.mediaType = t.type;
-            if (t.type === "anime") {
-              mediaTabAnime.classList.add("active");
-              mediaTabManga.classList.remove("active");
-            } else {
-              mediaTabManga.classList.add("active");
-              mediaTabAnime.classList.remove("active");
-            }
-          }
-          searchInput.value = t.prompt;
-          handleSearch();
-        });
-        tropePillsContainer.appendChild(pill);
-      });
+      cachedPresetTropes = await res.json();
+      renderPresetTropes();
     } catch (e) {
       console.error("Error loading tropes:", e);
     }
+  }
+
+  function renderPresetTropes() {
+    if (!tropePillsContainer || !cachedPresetTropes || !cachedPresetTropes.length) return;
+    const isEn = state.language === "en";
+    tropePillsContainer.innerHTML = "";
+    
+    cachedPresetTropes.forEach(t => {
+      const pill = document.createElement("button");
+      pill.className = "trope-pill";
+      const label = isEn ? (t.label_en || t.label) : t.label;
+      const prompt = isEn ? (t.prompt_en || t.prompt) : t.prompt;
+      pill.innerHTML = `<span>✨</span> ${escapeHtml(label)}`;
+      pill.addEventListener("click", () => {
+        if (t.type) {
+          state.mediaType = t.type;
+          if (t.type === "anime") {
+            mediaTabAnime.classList.add("active");
+            mediaTabManga.classList.remove("active");
+          } else {
+            mediaTabManga.classList.add("active");
+            mediaTabAnime.classList.remove("active");
+          }
+        }
+        searchInput.value = prompt;
+        handleSearch();
+      });
+      tropePillsContainer.appendChild(pill);
+    });
   }
 
   // Load Featured Content on startup
@@ -409,8 +442,8 @@ document.addEventListener("DOMContentLoaded", () => {
           <p class="card-synopsis">${escapeHtml(item.synopsis || 'Sinopsis tidak tersedia.')}</p>
 
           <div class="ai-match-box">
-            <div class="ai-match-header">💡 Kenapa Cocok:</div>
-            <div class="ai-match-text">${escapeHtml(item.why_it_matches || 'Cocok dengan kriteria pencarian dan preferensi trope yang Anda cari.')}</div>
+            <div class="ai-match-header">${state.language === 'en' ? '💡 Why It Matches Your Trope:' : '💡 Kenapa Cocok:'}</div>
+            <div class="ai-match-text">${escapeHtml(formatWhyText(item.why_it_matches || (state.language === 'en' ? 'Matches your search criteria and trope preferences.' : 'Cocok dengan kriteria pencarian dan preferensi trope yang Anda cari.')))}</div>
           </div>
 
           <div class="card-footer">
@@ -517,7 +550,7 @@ document.addEventListener("DOMContentLoaded", () => {
     animeModalSynopsis.textContent = item.synopsis || "Sinopsis tidak tersedia.";
 
     if (item.why_it_matches) {
-      animeModalAiMatch.textContent = item.why_it_matches;
+      animeModalAiMatch.textContent = formatWhyText(item.why_it_matches);
       animeModalAiBox.style.display = "block";
     } else {
       animeModalAiBox.style.display = "none";
