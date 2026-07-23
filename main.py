@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from typing import Optional, List, Literal
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response, PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -203,6 +203,22 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.api_route("/", methods=["GET", "HEAD"])
 async def serve_index():
     return FileResponse("static/index.html")
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def get_robots_txt():
+    return "User-agent: *\nAllow: /\nSitemap: https://anitrope.web.id/sitemap.xml\n"
+
+@app.get("/sitemap.xml")
+async def get_sitemap_xml():
+    xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://anitrope.web.id/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>"""
+    return Response(content=xml_content, media_type="application/xml")
 
 if __name__ == "__main__":
     import uvicorn
