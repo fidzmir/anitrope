@@ -82,6 +82,13 @@
       </div>
 
       <div class="header-meta">
+        <nav class="site-nav">
+          <button type="button" class="nav-link" id="nav-home">Beranda</button>
+          <button type="button" class="nav-link" id="nav-about">Tentang</button>
+          <button type="button" class="nav-link" id="nav-privacy">Privasi</button>
+          <button type="button" class="nav-link" id="nav-disclaimer">Penafian</button>
+        </nav>
+
         <div class="media-switcher">
           <button id="tab-anime" class="media-tab active" type="button">Anime</button>
           <button id="tab-manga" class="media-tab" type="button">Manga</button>
@@ -142,6 +149,27 @@
         </div>
       </section>
     </main>
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <img src="/static/images/anitrope-icon.png" alt="AniTrope Logo" width="26" height="26">
+            <span>AniTrope</span>
+          </div>
+          <p>© 2026 AniTrope — Pencari Situasi & Trope Anime/Manga Terlengkap.</p>
+        </div>
+        <div class="footer-links">
+          <button type="button" class="footer-link" id="foot-home">Beranda</button>
+          <span class="footer-sep">•</span>
+          <button type="button" class="footer-link" id="foot-about">Tentang Kami</button>
+          <span class="footer-sep">•</span>
+          <button type="button" class="footer-link" id="foot-privacy">Kebijakan Privasi</button>
+          <span class="footer-sep">•</span>
+          <button type="button" class="footer-link" id="foot-disclaimer">Penafian</button>
+        </div>
+      </div>
+    </footer>
   </div>
 
   <!-- Cyber Glassmorphism News Detail Modal -->
@@ -161,6 +189,74 @@
         <a id="modal-news-link" href="#" target="_blank" rel="noopener" class="btn-read-article">
           Baca Selengkapnya di Artikel Asli <span>↗</span>
         </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div id="about-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card info-modal-card">
+      <button id="btn-close-about" class="modal-close-btn" type="button">&times;</button>
+      <div class="modal-header">
+        <span class="info-badge">🔮 TENTANG ANITROPE</span>
+      </div>
+      <h2 class="modal-news-title">Pencari Anime & Manga Berbasis Situasi Hyper-Spesifik</h2>
+      <div class="info-modal-body">
+        <p><strong>AniTrope</strong> adalah platform mesin pencari anime dan manga yang memungkinkan pengguna menemukan judul terbaik berdasarkan alur cerita, situasi emosional, dan trope spesifik menggunakan bahasa alami (Natural Language Processing).</p>
+        
+        <h3>✨ Fitur Unggulan</h3>
+        <ul>
+          <li><strong>Pencarian Situasi Spesifik:</strong> Temukan anime dengan alur unik (seperti <em>"MC menyembunyikan kekuatan supernya"</em> atau <em>"MC jualan di dunia isekai"</em>).</li>
+          <li><strong>Dual Database Engine:</strong> Penggabungan data langsung dari <strong>AniList GraphQL API</strong> dan <strong>Official MyAnimeList API v2</strong>.</li>
+          <li><strong>Analisis Trope Cepat (&lt;1ms):</strong> Penilaian relevansi alur cerita instant tanpa waktu tunggu lama.</li>
+          <li><strong>Live Anime News Ticker:</strong> Dapatkan berita anime dan manga terbaru langsung dari Anime News Network (ANN) dan Crunchyroll.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy Policy Modal -->
+  <div id="privacy-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card info-modal-card">
+      <button id="btn-close-privacy" class="modal-close-btn" type="button">&times;</button>
+      <div class="modal-header">
+        <span class="info-badge privacy">🔒 KEBIJAKAN PRIVASI</span>
+      </div>
+      <h2 class="modal-news-title">Kebijakan Privasi Pengguna</h2>
+      <div class="info-modal-body">
+        <p>Di <strong>AniTrope</strong> (<em>https://anitrope.web.id</em>), privasi pengunjung kami adalah prioritas utama. Dokumen Kebijakan Privasi ini berisi jenis informasi yang dikumpulkan dan dicatat oleh AniTrope serta bagaimana kami menggunakannya.</p>
+        
+        <h3>1. Informasi yang Kami Kumpulkan</h3>
+        <p>Kami menggunakan <strong>Google Analytics 4 (GA4)</strong> untuk menganalisis statistik agregat pengunjung (seperti jumlah tampilan halaman, negara asal, dan jenis perangkat). Kami <strong>tidak mengumpulkan</strong> nama, alamat email, atau informasi identitas pribadi Anda.</p>
+
+        <h3>2. Penggunaan Cookie & Penyimpanan Lokal</h3>
+        <p>AniTrope menggunakan penyimpanan lokal browser (<em>localStorage</em>) untuk menyimpan cache sementara hasil pencarian guna mempercepat waktu muat halaman. Cookie Google Analytics digunakan untuk analisis agregat situs.</p>
+
+        <h3>3. Keamanan Data</h3>
+        <p>Situs ini dilindungi dengan enkripsi SSL/TLS (HTTPS) standar industri untuk memastikan semua komunikasi antara perangkat Anda dan server kami berlangsung secara aman.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Disclaimer Modal -->
+  <div id="disclaimer-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card info-modal-card">
+      <button id="btn-close-disclaimer" class="modal-close-btn" type="button">&times;</button>
+      <div class="modal-header">
+        <span class="info-badge disclaimer">⚖️ PENAFIAN (DISCLAIMER)</span>
+      </div>
+      <h2 class="modal-news-title">Penafian & Hak Cipta Content</h2>
+      <div class="info-modal-body">
+        <p><strong>AniTrope</strong> adalah mesin pencari & indeks rekomendasi independen non-komersial.</p>
+
+        <h3>1. Hak Cipta Media & Konten</h3>
+        <p>Seluruh judul, gambar sampul (cover artwork), sinopsis, genre, dan metadata anime/manga yang ditampilkan di AniTrope adalah hak cipta dari pemegang lisensi, studio, dan pencipta aslinya masing-masing.</p>
+
+        <h3>2. Sumber Data Pihak Ketiga</h3>
+        <p>Data anime dan berita diintegrasikan melalui API publik dari <strong>MyAnimeList.net</strong>, <strong>AniList.co</strong>, <strong>Anime News Network</strong>, dan <strong>Crunchyroll</strong>. AniTrope tidak meng-host atau menyimpan file video, streaming, atau scanlation manga di server kami.</p>
+
+        <h3>3. Batasan Tanggung Jawab</h3>
+        <p>Informasi yang disediakan di AniTrope bertujuan sebagai referensi rekomendasi hiburan. Kami tidak menjamin kelengkapan mutlak dari setiap deskripsi yang bersumber dari API pihak ketiga.</p>
       </div>
     </div>
   </div>

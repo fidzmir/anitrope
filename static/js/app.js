@@ -52,6 +52,43 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Info Modals Logic (About, Privacy, Disclaimer)
+  setupInfoModal("nav-about", "foot-about", "about-modal", "btn-close-about");
+  setupInfoModal("nav-privacy", "foot-privacy", "privacy-modal", "btn-close-privacy");
+  setupInfoModal("nav-disclaimer", "foot-disclaimer", "disclaimer-modal", "btn-close-disclaimer");
+
+  // Home Nav Reset
+  const resetHome = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (state.currentPrompt) {
+      searchInput.value = "";
+      state.currentPrompt = "";
+      loadFeaturedContent();
+    }
+  };
+  document.getElementById("nav-home")?.addEventListener("click", resetHome);
+  document.getElementById("foot-home")?.addEventListener("click", resetHome);
+
+  function setupInfoModal(navId, footId, modalId, closeBtnId) {
+    const modal = document.getElementById(modalId);
+    const closeBtn = document.getElementById(closeBtnId);
+    const openModal = () => {
+      if (modal) modal.style.display = "flex";
+    };
+    const closeModal = () => {
+      if (modal) modal.style.display = "none";
+    };
+
+    document.getElementById(navId)?.addEventListener("click", openModal);
+    document.getElementById(footId)?.addEventListener("click", openModal);
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+      });
+    }
+  }
+
   // Switch Media (Anime / Manga)
   function switchMedia(type) {
     if (state.mediaType === type) return;
