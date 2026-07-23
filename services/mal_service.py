@@ -4,7 +4,7 @@ import httpx
 import asyncio
 import logging
 from typing import List, Dict, Any, Optional
-from services.anilist_service import AniListService
+from services.anilist_service import AniListService, SEARCH_MEDIA_QUERY
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +106,90 @@ class MALService:
         if elapsed < 0.30:
             await asyncio.sleep(0.30 - elapsed)
         _LAST_REQUEST_TIME = asyncio.get_event_loop().time()
+
+    async def search_by_title(self, title: str, type_str: str = "anime") -> Optional[Dict[str, Any]]:
+        """
+        Search for a single title by name in AniList GraphQL (primary) + MAL API (supplementary).
+        Returns the best-matched item dict with full metadata, or None.
+        """
+        media_type = "MANGA" if type_str.lower() == "manga" else "ANIME"
+        mal_media_type = "manga" if type_str.lower() == "manga" else "anime"
+
+        result = {}
+
+        # 1. Try AniList first (GraphQL search by title)
+        try:
+            anilist_items = await self.anilist._query_graphql(
+                SEARCH_MEDIA_QUERY,
+                {"search": title, "type": media_type, "page": 1, "perPage": 5}
+            )
+            if anilist_items:
+                item = anilist_items[0]
+                title_romaji = (item.get("title") or {}).get("romaji") or ""
+                title_english = (item.get("title") or {}).get("english") or title_romaji
+                cover = (item.get("coverImage") or {})
+                img_url = cover.get("extraLarge") or cover.get("large") or cover.get("medium") or ""
+                genres = item.get("genres") or []
+                tags = [t.get("name") for t in item.get("tags", []) if t.get("name") and not t.get("isAdult", False)][:8]
+                result = {
+                    "anilist_id": item.get("id"),
+                    "mal_id": item.get("idMal"),
+                    "title": title_romaji or title_english,
+                    "title_english": title_english,
+                    "image_url": img_url,
+                    "type": media_type,
+                    "episodes": item.get("episodes") if mal_media_type == "anime" else item.get("chapters"),
+                    "status": item.get("status"),
+                    "score": (item.get("averageScore") or 0) / 10.0 if item.get("averageScore") else None,
+                    "anilist_score": (item.get("averageScore") or 0) / 10.0 if item.get("averageScore") else None,
+                    "synopsis": item.get("description") or "",
+                    "genres": genres,
+                    "tags": tags,
+                    "url": f"https://myanimelist.net/{mal_media_type}/{item.get('idMal')}" if item.get("idMal") else None,
+                    "anilist_url": item.get("siteUrl") or f"https://anilist.co/{mal_media_type}/{item.get('id')}",
+                    "media_category": mal_media_type
+                }
+                return result
+        except Exception as e:
+            logger.warning(f"AniList title search failed for '{title}': {e}")
+
+        # 2. Fallback to MAL API
+        if self.mal_client_id:
+            try:
+                await self._rate_limit_delay()
+                fields = "id,title,main_picture,synopsis,mean,rank,genres,num_episodes,num_chapters,status"
+                res = await self.client.get(
+                    f"{OFFICIAL_MAL_BASE_URL}/{mal_media_type}",
+                    params={"q": title, "limit": 3, "fields": fields},
+                    headers={"X-MAL-CLIENT-ID": self.mal_client_id}
+                )
+                if res.status_code == 200:
+                    data = res.json().get("data", [])
+                    if data:
+                        node = data[0].get("node", {})
+                        img = node.get("main_picture") or {}
+                        return {
+                            "mal_id": node.get("id"),
+                            "anilist_id": None,
+                            "title": node.get("title") or title,
+                            "title_english": node.get("title") or title,
+                            "image_url": img.get("large") or img.get("medium") or "",
+                            "type": mal_media_type.upper(),
+                            "episodes": node.get("num_episodes") if mal_media_type == "anime" else node.get("num_chapters"),
+                            "status": node.get("status"),
+                            "score": node.get("mean"),
+                            "anilist_score": None,
+                            "synopsis": node.get("synopsis") or "",
+                            "genres": [g.get("name") for g in node.get("genres", []) if g.get("name")],
+                            "tags": [],
+                            "url": f"https://myanimelist.net/{mal_media_type}/{node.get('id')}" if node.get("id") else None,
+                            "anilist_url": None,
+                            "media_category": mal_media_type
+                        }
+            except Exception as e:
+                logger.warning(f"MAL title search failed for '{title}': {e}")
+
+        return None
 
     async def fetch_candidates(
         self,

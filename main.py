@@ -96,10 +96,16 @@ PRESET_TROPES = [
 @app.get("/api/health")
 async def health_check():
     has_mal_client = bool(mal_service.mal_client_id)
+    grok_active = ai_service.is_grok_active()
+    gemini_active = ai_service.is_gemini_active()
+
+    engine_name = "Grok 4.5 (xAI) AI Engine" if grok_active else ("Gemini 2.0 Flash AI Engine" if gemini_active else "100% Local Fast Concept Engine")
+
     return {
         "status": "online",
-        "ai_engine": "100% Local Fast Concept Engine (Zero External AI Calls)",
-        "gemini_active": False,
+        "ai_engine": engine_name,
+        "grok_active": grok_active,
+        "gemini_active": grok_active or gemini_active,
         "anilist_active": True,
         "mal_client_id_active": has_mal_client,
         "data_source": "Dual Database: AniList GraphQL + Official MyAnimeList API v2"
@@ -129,11 +135,84 @@ async def search_tropes(req: SearchRequest):
     media_type = "manga" if req.media_type and req.media_type.lower() == "manga" else "anime"
     logger.info(f"Processing query: '{prompt}' [Media: {media_type}]")
 
-    # Step 1: Parse user query into parameters using Gemini 2.0 Flash
+    try:
+        # ─────────────────────────────────────────────────────────────────────
+        # NEW WORKFLOW: Grok 4.5 recommends titles directly (ONE API CALL)
+        # ─────────────────────────────────────────────────────────────────────
+        grok_recs = await ai_service.grok_recommend(prompt, media_type=media_type)
+
+    except Exception as e:
+        logger.error(f"Grok recommend failed: {e}", exc_info=True)
+        grok_recs = None
+
+    if grok_recs:
+        logger.info(f"Grok 4.5 recommended {len(grok_recs)} titles. Fetching metadata...")
+
+        # Step 2: Fetch MAL/AniList metadata for each recommended title
+        final_results = []
+        fetch_tasks = []
+        for rec in grok_recs:
+            title = rec.get("title") or ""
+            if title:
+                fetch_tasks.append((rec, mal_service.search_by_title(title, type_str=media_type)))
+
+        # Run all metadata fetches concurrently
+        import asyncio as _asyncio
+        results_raw = await _asyncio.gather(*[task for _, task in fetch_tasks], return_exceptions=True)
+
+        for (rec, _), meta in zip(fetch_tasks, results_raw):
+            if isinstance(meta, Exception) or not meta:
+                # Build minimal fallback card from Grok data only
+                final_results.append({
+                    "title": rec.get("title", ""),
+                    "title_english": rec.get("title", ""),
+                    "image_url": None,
+                    "score": None,
+                    "episodes": None,
+                    "status": None,
+                    "genres": rec.get("trope_tags", []),
+                    "tags": rec.get("trope_tags", []),
+                    "synopsis": "",
+                    "url": None,
+                    "anilist_url": None,
+                    "type": media_type.upper(),
+                    "match_score": int(rec.get("match_score") or 85),
+                    "why_it_matches": rec.get("why_it_matches", ""),
+                    "trope_tags": rec.get("trope_tags", [])[:4],
+                    "media_category": media_type,
+                    "score_rank": float(rec.get("match_score") or 85)
+                })
+            else:
+                item = meta
+                item["match_score"] = int(rec.get("match_score") or 85)
+                item["why_it_matches"] = rec.get("why_it_matches", "")
+                item["trope_tags"] = (rec.get("trope_tags") or item.get("tags") or item.get("genres") or [])[:4]
+                item["score_rank"] = float(rec.get("match_score") or 85)
+                final_results.append(item)
+
+        # Sort by Grok match_score descending
+        final_results.sort(key=lambda x: x.get("match_score", 0), reverse=True)
+
+        return {
+            "prompt": prompt,
+            "search_meta": {
+                "keywords": [prompt],
+                "target_tropes": list({t for r in grok_recs for t in r.get("trope_tags", [])}),
+                "exclude_tropes": [],
+                "media_type": media_type,
+                "engine": "grok-4.5"
+            },
+            "results": final_results
+        }
+
+    # ─────────────────────────────────────────────────────────────────────
+    # FALLBACK: Grok unavailable → use local keyword engine
+    # ─────────────────────────────────────────────────────────────────────
+    logger.info("Grok 4.5 unavailable, falling back to local keyword engine...")
+
     parse_result = await ai_service.parse_query(prompt, default_media_type=media_type)
     logger.info(f"Parsed strategy -> Keywords: {parse_result.keywords}, Target Tropes: {parse_result.target_tropes}")
 
-    # Step 2: Fetch candidate items strictly using parsed tags, genres, and keywords
     candidates = await mal_service.fetch_candidates(
         keywords=parse_result.keywords,
         target_tropes=parse_result.target_tropes,
@@ -155,7 +234,6 @@ async def search_tropes(req: SearchRequest):
             "results": []
         }
 
-    # Step 3: Rerank & explain Top candidate items
     evaluations = await ai_service.rerank_and_explain(
         user_prompt=prompt,
         target_tropes=parse_result.target_tropes,
@@ -163,7 +241,6 @@ async def search_tropes(req: SearchRequest):
         candidates=candidates
     )
 
-    # Combine metadata and AI evaluations (Strictly excluding match_score == 0)
     final_results = []
     for cand in candidates:
         mal_id = cand.get("mal_id")
@@ -172,13 +249,13 @@ async def search_tropes(req: SearchRequest):
         clean_t = re.sub(r'[^a-zA-Z0-9\s]', '', title_key).strip()
 
         ev = evaluations.get(title_key) or evaluations.get(clean_t) or (evaluations.get(mal_id) if mal_id else None) or (evaluations.get(anilist_id) if anilist_id else None)
-        
+
         if not ev:
             for k, val in evaluations.items():
                 if isinstance(k, str) and len(k) >= 4 and (k in title_key or title_key in k):
                     ev = val
                     break
-        
+
         match_score = ev.match_score if ev else cand.get("match_score", 0)
         why_matches = ev.why_it_matches if ev else cand.get("why_it_matches", "")
         trope_tags = (ev.trope_tags if ev else (cand.get("tags") or cand.get("genres") or []))[:4]
@@ -190,7 +267,6 @@ async def search_tropes(req: SearchRequest):
             cand_copy["trope_tags"] = trope_tags
             final_results.append(cand_copy)
 
-    # Sort results by Top Matched Trope Relevance FIRST, then Rating Score SECOND
     final_results.sort(
         key=lambda x: (x.get("match_score", 0), x.get("score_rank", 0), x.get("score") or x.get("anilist_score") or 0.0),
         reverse=True

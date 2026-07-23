@@ -2,6 +2,7 @@ import os
 import re
 import json
 import logging
+import httpx
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -152,6 +153,9 @@ class RerankResult(BaseModel):
 class AIService:
     def __init__(self):
         self.api_key = None
+        self.grok_base_url = None
+        self.grok_api_key = None
+        self.grok_model = None
         self._check_api_key()
 
     def _check_api_key(self):
@@ -159,13 +163,111 @@ class AIService:
         key = (os.getenv("GEMINI_API_KEY") or "").strip()
         if key and key != "your_gemini_api_key_here" and not key.startswith("your_"):
             self.api_key = key
-            return True
         else:
             self.api_key = None
-            return False
 
-    def is_gemini_active(self) -> bool:
-        return self._check_api_key()
+        grok_url = (os.getenv("GROK_BASE_URL") or "https://api.rentalgenset.asia/v1").strip()
+        grok_key = (os.getenv("GROK_API_KEY") or "sk-user-bFcH93wTtUHSP7Eo25aXh5ccHXo2rel").strip()
+        grok_mod = (os.getenv("GROK_MODEL") or "grok-4.5").strip()
+
+        if grok_url and grok_key:
+            self.grok_base_url = grok_url.rstrip("/")
+            self.grok_api_key = grok_key
+            self.grok_model = grok_mod
+        else:
+            self.grok_base_url = None
+            self.grok_api_key = None
+
+        return bool(self.api_key or self.grok_api_key)
+
+    def is_grok_active(self) -> bool:
+        self._check_api_key()
+        return bool(self.grok_base_url and self.grok_api_key)
+
+    async def _fetch_key_quota(self, client: httpx.AsyncClient) -> Optional[Dict[str, Any]]:
+        if not self.grok_base_url or not self.grok_api_key:
+            return None
+        try:
+            base = self.grok_base_url.rsplit('/v1', 1)[0]
+            r = await client.get(f"{base}/api/me", headers={"Authorization": f"Bearer {self.grok_api_key}"})
+            if r.status_code == 200:
+                return r.json()
+        except Exception:
+            pass
+        return None
+
+    async def _call_grok_api(self, prompt: str, system_prompt: str = "", timeout_sec: float = 600.0, max_tokens: int = 0) -> Optional[str]:
+        if not self.grok_base_url or not self.grok_api_key:
+            return None
+
+        headers = {
+            "Authorization": f"Bearer {self.grok_api_key}",
+            "Content-Type": "application/json"
+        }
+
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        body = {
+            "model": self.grok_model or "grok-4.5",
+            "messages": messages,
+            "temperature": 0.2,
+            "reasoning_effort": "low"
+        }
+        if max_tokens > 0:
+            body["max_tokens"] = max_tokens
+
+        try:
+            async with httpx.AsyncClient(timeout=timeout_sec) as client:
+                r = await client.post(f"{self.grok_base_url}/chat/completions", json=body, headers=headers)
+                if r.status_code == 200:
+                    data = r.json()
+
+                    usage = data.get("usage", {})
+                    p_tokens = usage.get("prompt_tokens", 0)
+                    c_tokens = usage.get("completion_tokens", 0)
+                    t_tokens = usage.get("total_tokens", 0)
+
+                    # Fetch real API key quota from /api/me
+                    quota_info = await self._fetch_key_quota(client)
+                    customer = quota_info.get("customer") if quota_info else None
+                    label = quota_info.get("label") if quota_info else None
+                    quota_obj = quota_info.get("quota", {}) if quota_info else {}
+                    remaining_tokens = quota_obj.get("remaining")
+                    limit_tokens = quota_obj.get("limit")
+
+                    cust_str = f"{customer} ({label})" if customer and label else (customer or label or "API Key")
+                    rem_str = f"{remaining_tokens:,} / {limit_tokens:,}" if (remaining_tokens is not None and limit_tokens) else "N/A"
+
+                    print(f"\n=======================================================", flush=True)
+                    print(f"[GROK 4.5 API TOKEN USAGE STATS]:", flush=True)
+                    print(f"   * Key Owner        : {cust_str}", flush=True)
+                    print(f"   * Model Used       : {self.grok_model or 'grok-4.5'}", flush=True)
+                    print(f"   * Prompt Tokens    : {p_tokens}", flush=True)
+                    print(f"   * Completion Tokens: {c_tokens}", flush=True)
+                    print(f"   * Request Tokens   : {t_tokens}", flush=True)
+                    print(f"   * Sisa Quota Key   : {rem_str}", flush=True)
+                    print(f"=======================================================\n", flush=True)
+
+                    choices = data.get("choices") or []
+                    if choices and "message" in choices[0]:
+                        content = choices[0]["message"].get("content", "").strip()
+                        return content
+                else:
+                    logger.warning(f"Grok 4.5 API returned HTTP {r.status_code}: {r.text[:200]}")
+                    print(f"[WARNING] Grok 4.5 API non-200 status={r.status_code}: {r.text[:200]}", flush=True)
+        except httpx.TimeoutException as e:
+            logger.warning(f"Grok 4.5 API TIMEOUT ({type(e).__name__}): {e}", exc_info=True)
+            print(f"[WARNING] Grok 4.5 API TIMEOUT ({type(e).__name__}): {e}", flush=True)
+        except httpx.ConnectError as e:
+            logger.warning(f"Grok 4.5 API CONNECTION ERROR ({type(e).__name__}): {e}", exc_info=True)
+            print(f"[WARNING] Grok 4.5 API CONNECTION ERROR ({type(e).__name__}): {e}", flush=True)
+        except Exception as e:
+            logger.warning(f"Grok 4.5 API exception ({type(e).__name__}): {e}", exc_info=True)
+            print(f"[WARNING] Grok 4.5 API exception ({type(e).__name__}): {e}", flush=True)
+        return None
 
     def _normalize_prompt(self, user_prompt: str) -> str:
         """Pre-translation normalization for typos, slang, and otaku idioms."""
@@ -489,9 +591,69 @@ class AIService:
 
     async def parse_query(self, user_prompt: str, default_media_type: str = "anime") -> QueryParseResult:
         """
-        Fast 100% local concept & trope extractor (<1ms). Zero external AI API calls.
+        Parses user prompt using Grok 4.5 AI if active, with smart fallback to local concept extractor.
         """
+        if self.is_grok_active():
+            system_prompt = (
+                "You are an expert anime/manga recommendation parser AI. "
+                "Analyze the user request and output ONLY a raw JSON object with keys: "
+                "media_type ('anime' or 'manga'), keywords (array of 1-3 English search words), "
+                "target_tropes (array of 1-3 specific tropes), exclude_tropes (array of excluded tropes), "
+                "genres (array of genres like Romance, Action, Fantasy, Comedy), anilist_tags (array of AniList tags), "
+                "clean_keyword (string of 1-2 key search words)."
+            )
+            grok_reply = await self._call_grok_api(f"Parse query: '{user_prompt}'", system_prompt)
+            if grok_reply:
+                try:
+                    clean_json = re.sub(r'```json\s*|\s*```', '', grok_reply).strip()
+                    parsed = json.loads(clean_json)
+                    logger.info(f"Grok 4.5 successfully parsed query: {parsed}")
+                    return QueryParseResult(
+                        media_type=parsed.get("media_type") or default_media_type,
+                        keywords=parsed.get("keywords") or [],
+                        target_tropes=parsed.get("target_tropes") or [],
+                        exclude_tropes=parsed.get("exclude_tropes") or [],
+                        genres=parsed.get("genres") or [],
+                        anilist_tags=parsed.get("anilist_tags") or [],
+                        clean_keyword=parsed.get("clean_keyword") or ""
+                    )
+                except Exception as ex:
+                    logger.warning(f"Grok 4.5 JSON parse error: {ex}")
+
         return self._smart_fallback_parse(user_prompt, default_media_type)
+
+    async def grok_recommend(self, user_prompt: str, media_type: str = "anime") -> Optional[List[Dict[str, Any]]]:
+        """
+        Calls Grok 4.5 ONCE to directly recommend anime/manga titles with reasoning.
+        Returns a list of dicts: [{title, why_it_matches, match_score, trope_tags}, ...]
+        Falls back to None if Grok is unavailable.
+        """
+        if not self.is_grok_active():
+            return None
+
+        system_prompt = (
+            f"You are an expert anime and manga recommendation AI with deep knowledge of narrative tropes. "
+            f"The user is looking for {media_type} recommendations. "
+            "Recommend the 5 BEST matching titles from your knowledge. "
+            "Output ONLY a raw JSON array. Each object must have:\n"
+            "- title: official English or romaji title\n"
+            "- match_score: integer 70-99\n"
+            "- why_it_matches: a rich 1-2 sentence explanation in the user's language detailing specific plot mechanisms or character choices that fit the user request.\n"
+            "Do NOT include tags or genres (they are handled externally)."
+        )
+
+        grok_reply = await self._call_grok_api(user_prompt, system_prompt, timeout_sec=600.0, max_tokens=550)
+        if not grok_reply:
+            return None
+
+        try:
+            clean_json = re.sub(r'```json\s*|\s*```', '', grok_reply).strip()
+            rec_list = json.loads(clean_json)
+            logger.info(f"Grok 4.5 recommended {len(rec_list)} titles for query: '{user_prompt[:60]}'")
+            return rec_list
+        except Exception as ex:
+            logger.warning(f"Grok 4.5 recommend JSON parse error: {ex} | Raw: {grok_reply[:200]}")
+            return None
 
     async def rerank_and_explain(
         self,
@@ -501,8 +663,93 @@ class AIService:
         candidates: List[Dict[str, Any]]
     ) -> Dict[Any, ItemEvaluation]:
         """
-        Fast 100% local candidate scoring and reasoning generator (<1ms). Zero external AI API calls.
+        Uses Grok 4.5 AI to analyze candidates' synopses & tropes, calculate match scores,
+        generate custom reasoning (why_it_matches), and extract trope tags.
         """
+        if self.is_grok_active() and candidates:
+            items_summary = []
+            for idx, c in enumerate(candidates[:6]):
+                title = c.get("title") or c.get("title_english") or "Unknown"
+                syn = (c.get("synopsis") or "No synopsis available.")[:150]
+                tags = ", ".join((c.get("genres") or []) + (c.get("tags") or []))[:100]
+                items_summary.append(f"ID: {idx}\nTitle: {title}\nSynopsis: {syn}\nTags: {tags}\n---")
+
+            joined_items = "\n".join(items_summary)
+            prompt_text = (
+                f"User Request: '{user_prompt}'\n\n"
+                f"Candidate Anime/Manga List:\n{joined_items}\n\n"
+                "Evaluate each candidate based on its synopsis and tags against the user request. "
+                "Output ONLY a raw JSON array of objects, where each object has:\n"
+                "- id: integer ID (0 to N-1 from list)\n"
+                "- title: (exact title string from list)\n"
+                "- match_score: integer from 65 to 99\n"
+                "- why_it_matches: MAX 15 words in the user's prompt language explaining WHY this title fits.\n"
+                "- trope_tags: array of 2-4 matching trope tags in English."
+            )
+
+            system_prompt = "You are an expert anime/manga trope evaluator. Output ONLY a valid JSON array of evaluations."
+            grok_reply = await self._call_grok_api(prompt_text, system_prompt, timeout_sec=45.0, max_tokens=800)
+            if grok_reply:
+                try:
+                    clean_json = re.sub(r'```json\s*|\s*```', '', grok_reply).strip()
+                    eval_list = json.loads(clean_json)
+                    evals = {}
+
+                    # Fill base evaluations for all candidates
+                    for idx, item in enumerate(candidates):
+                        score = item.get("match_score") or max(65, 95 - (idx * 2))
+                        item_key = item.get("title", "").lower().strip()
+                        why_text = self._build_smart_explanation(item, target_tropes, user_prompt)
+                        ev = ItemEvaluation(
+                            mal_id=item.get("mal_id"),
+                            title=item.get("title", ""),
+                            match_score=score,
+                            why_it_matches=why_text,
+                            trope_tags=(item.get("tags") or item.get("genres") or [])[:3]
+                        )
+                        evals[item_key] = ev
+                        if item.get("title_english"):
+                            evals[item["title_english"].lower().strip()] = ev
+
+                    # Overlay Grok 4.5 evaluations by exact candidate ID & title
+                    for ev_dict in eval_list:
+                        ev_id = ev_dict.get("id")
+                        t_name = ev_dict.get("title", "")
+                        matched_item = None
+                        if ev_id is not None and isinstance(ev_id, int) and 0 <= ev_id < len(candidates):
+                            matched_item = candidates[ev_id]
+
+                        why_str = ev_dict.get("why_it_matches") or ""
+                        score_val = int(ev_dict.get("match_score") or 88)
+                        trope_tags = ev_dict.get("trope_tags") or []
+
+                        if matched_item:
+                            ev = ItemEvaluation(
+                                mal_id=matched_item.get("mal_id"),
+                                title=matched_item.get("title") or t_name,
+                                match_score=score_val,
+                                why_it_matches=why_str,
+                                trope_tags=trope_tags or (matched_item.get("tags") or [])[:3]
+                            )
+                            mk = (matched_item.get("title") or "").lower().strip()
+                            if mk:
+                                evals[mk] = ev
+                            if matched_item.get("title_english"):
+                                evals[matched_item["title_english"].lower().strip()] = ev
+                        elif t_name:
+                            ev = ItemEvaluation(
+                                title=t_name,
+                                match_score=score_val,
+                                why_it_matches=why_str,
+                                trope_tags=trope_tags
+                            )
+                            evals[t_name.lower().strip()] = ev
+
+                    logger.info(f"Grok 4.5 successfully evaluated {len(eval_list)} candidates with ID mapping!")
+                    return evals
+                except Exception as ex:
+                    logger.warning(f"Grok 4.5 rerank JSON parse error: {ex}")
+
         evals = {}
         for idx, item in enumerate(candidates):
             score = item.get("match_score") or max(65, 98 - (idx * 2))

@@ -258,6 +258,17 @@ class AniListService:
             for item in genre_items:
                 raw_media_pool[item["id"]] = item
 
+        # Keyword Fallback: Search using keywords if candidate pool is still small (< 5)
+        if len(raw_media_pool) < 5 and keywords:
+            for kw in keywords[:3]:
+                if len(kw) >= 3:
+                    kw_items = await self._query_graphql(
+                        SEARCH_MEDIA_QUERY,
+                        {"search": kw, "type": media_type, "page": 1, "perPage": 15}
+                    )
+                    for item in kw_items:
+                        raw_media_pool[item["id"]] = item
+
         # Process and format items
         candidates = []
         ADULT_KEYWORDS = {"hentai", "erotica", "adult", "explicit", "nsfw", "18+", "borderline h"}

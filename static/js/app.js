@@ -272,7 +272,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch("/api/health");
       const data = await res.json();
       if (aiStatusBadge) {
-        if (data.gemini_active) {
+        if (data.grok_active) {
+          aiStatusBadge.innerHTML = `<span class="status-dot" style="background:#38bdf8;box-shadow:0 0 8px #38bdf8;"></span> AI Engine: Grok 4.5 (xAI)`;
+        } else if (data.gemini_active) {
           aiStatusBadge.innerHTML = `<span class="status-dot"></span> AI Engine: Gemini 2.0 Flash`;
         } else {
           aiStatusBadge.innerHTML = `<span class="status-dot" style="background:#fbbf24;box-shadow:0 0 8px #fbbf24;"></span> Keyword Rerank Engine (No API Key)`;
@@ -385,24 +387,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Render Search Meta Info Bar
   function renderSearchMeta(meta) {
-    if (!meta) {
+    if (searchMetaBar) {
       searchMetaBar.style.display = "none";
-      return;
+      searchMetaBar.innerHTML = "";
     }
-    
-    searchMetaBar.style.display = "flex";
-    const keywordsHtml = (meta.keywords || []).map(k => `<span class="meta-chip">#${k}</span>`).join(" ");
-    const tropesHtml = (meta.target_tropes || []).map(t => `<span class="meta-chip" style="color:#c084fc;border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.12)">🎯 ${t}</span>`).join(" ");
-
-    searchMetaBar.innerHTML = `
-      <div class="meta-title">
-        Strategi AI: Kategori <strong>${meta.media_type.toUpperCase()}</strong>
-      </div>
-      <div class="meta-tags">
-        ${keywordsHtml}
-        ${tropesHtml}
-      </div>
-    `;
   }
 
   // Render Results Cards Grid
