@@ -1,6 +1,7 @@
 // App Logic & API Communication
 // SETTING LINK AFFILIATE (Ganti URL ini dengan link affiliate Shopee/Tokopedia/Involve Asia/Popunder Anda)
 window.AFFILIATE_REDIRECT_URL = window.AFFILIATE_REDIRECT_URL || "https://shope.ee/YOUR_AFFILIATE_LINK";
+const DEFAULT_FALLBACK_IMAGE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400"><rect width="300" height="400" fill="%231e293b"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23a855f7" font-family="sans-serif" font-size="20" font-weight="bold">No Cover</text></svg>`;
 
 document.addEventListener("DOMContentLoaded", () => {
   const state = {
@@ -291,7 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const card = document.createElement("div");
       card.className = "card";
 
-      const fallbackImg = "https://via.placeholder.com/300x400/1e293b/a855f7?text=No+Cover";
+      const fallbackImg = DEFAULT_FALLBACK_IMAGE;
       const imageSrc = item.image_url || fallbackImg;
       const matchScore = item.match_score || 80;
       
@@ -310,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       card.innerHTML = `
         <div class="card-image-wrap">
-          <img class="card-image" src="${imageSrc}" alt="${escapeHtml(item.title)}" onerror="this.src='${fallbackImg}'" loading="lazy">
+          <img class="card-image" src="${imageSrc}" alt="${escapeHtml(item.title)}" onerror="this.onerror=null;this.src=DEFAULT_FALLBACK_IMAGE;" loading="lazy">
           <div class="card-image-overlay"></div>
           <div class="score-badge">${scoreDisplay}</div>
           <div class="match-score-pill">🔥 ${matchScore}% Trope Match</div>
@@ -357,7 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
     items.forEach((item) => {
       const card = document.createElement("div");
       card.className = "card";
-      const fallbackImg = "https://via.placeholder.com/300x400/1e293b/a855f7?text=No+Cover";
+      const fallbackImg = DEFAULT_FALLBACK_IMAGE;
       const scoreBadge = item.score ? `MAL ★ ${item.score}` : (item.anilist_score ? `AL ★ ${item.anilist_score}` : "N/A");
       const tropeChips = (item.genres || []).slice(0, 3)
         .map(t => `<span class="trope-chip">${t}</span>`).join("");
@@ -367,7 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       card.innerHTML = `
         <div class="card-image-wrap">
-          <img class="card-image" src="${item.image_url || fallbackImg}" alt="${escapeHtml(item.title)}" onerror="this.src='${fallbackImg}'">
+          <img class="card-image" src="${item.image_url || fallbackImg}" alt="${escapeHtml(item.title)}" onerror="this.onerror=null;this.src=DEFAULT_FALLBACK_IMAGE;">
           <div class="card-image-overlay"></div>
           <div class="score-badge">${scoreBadge}</div>
         </div>
@@ -404,8 +405,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function openAnimeDetailModal(item) {
     if (!animeDetailModal) return;
 
-    const fallbackImg = "https://via.placeholder.com/300x400/1e293b/a855f7?text=No+Cover";
+    const fallbackImg = DEFAULT_FALLBACK_IMAGE;
     animeModalImg.src = item.image_url || fallbackImg;
+    animeModalImg.onerror = () => {
+      animeModalImg.onerror = null;
+      animeModalImg.src = DEFAULT_FALLBACK_IMAGE;
+    };
 
     const malScoreBadge = item.score ? `MAL ★ ${item.score}` : "";
     const anilistScoreBadge = item.anilist_score ? `AL ★ ${item.anilist_score}` : "";
